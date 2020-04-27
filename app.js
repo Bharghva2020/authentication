@@ -5,6 +5,7 @@ const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
 const encrypt = require("mongoose-encryption");
 const _ = require("lodash");
+const md5 = require("md5");
 
 const app = express();
 
@@ -27,10 +28,10 @@ const userSchema = new mongoose.Schema({
   password: String,
 });
 
-userSchema.plugin(encrypt, {
-  secret: SERECT,
-  encryptedFields: ["password"],
-});
+// userSchema.plugin(encrypt, {
+//   secret: SERECT,
+//   encryptedFields: ["password"],
+// });
 
 const User = new mongoose.model("user", userSchema);
 
@@ -53,7 +54,7 @@ app.get("/register", function (req, res) {
 app.post("/register", function (req, res) {
   const newUser = User({
     email: req.body.username,
-    password: req.body.password,
+    password: md5(req.body.password),
   });
 
   newUser.save(function (err) {
@@ -73,7 +74,7 @@ app.post("/login", function (req, res) {
     function (err, foundUser) {
       if (!err) {
         if (foundUser) {
-          if (foundUser.password === req.body.password) {
+          if (foundUser.password === md5(req.body.password)) {
             res.render("secrets");
           }
         }
@@ -83,6 +84,8 @@ app.post("/login", function (req, res) {
     }
   );
 });
+
+console.log(md5("qwerty"));
 
 app.listen(3000, function () {
   console.log("Server started on port 3000");
